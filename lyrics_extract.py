@@ -6,12 +6,29 @@ def extract():
     global song, artist
     song_name = song.get()
     artist_name = artist.get()
-    url = 'https://api.lyrics.ovh/v1/'+artist_name+'/'+song_name
-    response = requests.get(url)
-    json_data = json.loads(response.text)
+    api_key = 'f67fce6ee1f286b31b362709285703eb'
+    endpoint = f"http://api.musixmatch.com/ws/1.1/track.search?q_track={song_name}&q_artist={artist_name}&apikey={api_key}"
+    response = requests.get(endpoint)
+    json_data = response.json()
+
     try:
-        lyric = json_data['lyrics']
-        print(lyric)
+    # Extract the track ID from the response JSON
+        track_id = json_data["message"]["body"]["track_list"][0]["track"]["track_id"]
+    
+    # Define the API endpoint for getting the lyrics
+        endpoint = f"http://api.musixmatch.com/ws/1.1/track.lyrics.get?track_id={track_id}&apikey={api_key}"
+    
+    # Send a request to the API endpoint and get the response
+        response = requests.get(endpoint)
+
+    # Parse the response JSON to get the lyrics
+        json_data = response.json()
+        
+        # Extract the lyrics from the response JSON
+        lyrics = json_data["message"]["body"]["lyrics"]["lyrics_body"]
+
+        # Print the lyrics
+        print(lyrics)
         tkmb.showinfo(message='Done')
     except:
         tkmb.showerror(message='No such song found')
@@ -19,7 +36,7 @@ def extract():
 root = Tk()
 root.title("Lyrics Extractor")
 root.geometry("550x210")
-Label(root, text='Song Lyrics Extractor', font=("Comic Sans MS", 18, 'bold')).pack(side=TOP,fill=X)
+Label(root, text='Song Lyrics Extractor', font=("Times New Roman", 18, 'bold')).pack(side=TOP,fill=X)
 song = StringVar()
 artist = StringVar()
 e1 = Entry(root, width=50, textvariable=song).place(x=64, y=50)
